@@ -96,7 +96,20 @@
   .lobby-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 260px; }
   .or-row { display: flex; align-items: center; gap: 10px; color: #444; font-size: 13px; width: 100%; }
   .or-row::before, .or-row::after { content:''; flex:1; height:1px; background:#2a2a3e; }
-  .join-form { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .join-form { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+  .name-input {
+    padding: 12px 16px;
+    font-size: 18px;
+    text-align: center;
+    font-family: inherit;
+    background: var(--surface);
+    border: 1px solid #3a3a50;
+    border-radius: 6px;
+    color: #fff;
+    outline: none;
+    width: 100%;
+  }
+  .name-input:focus { border-color: var(--gold); }
   .code-input {
     padding: 12px 16px;
     font-size: 26px; letter-spacing: 8px; text-align: center;
@@ -221,9 +234,9 @@
 
   <!-- HUD -->
   <div id="hud" class="hidden">
-    <div class="hud-score" id="hud-p1">P1: 0</div>
+    <div class="hud-score" id="hud-p1">—: 0</div>
     <div id="hud-round">Round 1 of 7</div>
-    <div class="hud-score" id="hud-p2">P2: 0</div>
+    <div class="hud-score" id="hud-p2">—: 0</div>
   </div>
 
   <!-- LOBBY -->
@@ -234,35 +247,44 @@
     <div class="subtitle">Two-Player Card Game</div>
     <div class="divider"></div>
     <div class="lobby-actions">
+      <input
+        class="name-input"
+        id="name-input"
+        maxlength="18"
+        placeholder="Your name"
+        autocomplete="nickname"
+        autocorrect="off"
+        spellcheck="false"
+        onkeydown="if(event.key==='Enter')createGame()"
+      >
       <button class="btn btn-primary" onclick="createGame()">Create Game</button>
       <div class="or-row">or</div>
-      <button class="btn btn-secondary" id="btn-show-join" onclick="toggleJoinForm()">Join Game</button>
-      <div class="join-form" id="join-form" style="display:none">
+      <div class="join-form" id="join-form">
         <input class="code-input" id="code-input" maxlength="5" placeholder="XXXXX"
           autocomplete="off" autocorrect="off" spellcheck="false"
           oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
           onkeydown="if(event.key==='Enter')joinGame()">
-        <button class="btn btn-primary" onclick="joinGame()">Join</button>
+        <button class="btn btn-primary" onclick="joinGame()">Join Game</button>
       </div>
       <div class="error-msg" id="lobby-error"></div>
     </div>
   </div>
 
-  <!-- WAITING ROOM (Player 1 waiting for opponent) -->
+  <!-- WAITING ROOM -->
   <div class="screen" id="screen-waiting-room">
     <div class="screen-title">Waiting for Opponent</div>
-    <div class="screen-sub">Share this code with Player 2:</div>
+    <div class="screen-sub" id="waiting-room-sub">Share this code with your opponent:</div>
     <div class="big-code" id="room-code-value">XXXXX</div>
     <button class="btn btn-secondary" id="copy-btn" onclick="copyCode()">Copy Code</button>
     <div class="spinner-row">
       <div class="spinner"></div>
-      <span>Waiting for Player 2 to join...</span>
+      <span id="waiting-room-spinner">Waiting for your opponent to join...</span>
     </div>
   </div>
 
   <!-- FIRST PLAYER PICK -->
   <div class="screen" id="screen-pick1">
-    <div class="player-label" id="pick1-player-label">Player 1 — Your Turn</div>
+    <div class="player-label" id="pick1-player-label">Your Turn</div>
     <div class="round-label" id="pick1-round-label">Round 1 of 7</div>
     <div class="instruction">Choose a card. Your opponent will only learn its color.</div>
     <div class="hand" id="hand-first"></div>
@@ -282,10 +304,10 @@
 
   <!-- SECOND PLAYER PICK -->
   <div class="screen" id="screen-pick2">
-    <div class="player-label" id="pick2-player-label">Player 2 — Your Turn</div>
+    <div class="player-label" id="pick2-player-label">Your Turn</div>
     <div class="round-label" id="pick2-round-label">Round 1 of 7</div>
     <div class="announce-banner" id="pick2-banner">
-      <div class="announce-who" id="pick2-opponent-name">Player 1</div>
+      <div class="announce-who" id="pick2-opponent-name">Opponent</div>
       <div class="announce-color-text">played a <strong id="pick2-color-hint">RED</strong> card</div>
     </div>
     <div class="hand" id="hand-second"></div>
@@ -316,14 +338,14 @@
   <!-- GAME OVER -->
   <div class="screen" id="screen-gameover">
     <div class="trophy" id="go-trophy">🏆</div>
-    <div class="final-title" id="go-title">Player 1 Wins!</div>
+    <div class="final-title" id="go-title">Game Over</div>
     <div class="final-scores">
       <div class="final-score-box" id="go-box1">
-        <div class="final-score-name">PLAYER 1</div>
+        <div class="final-score-name" id="go-name1">—</div>
         <div class="final-score-val" id="go-score1">0</div>
       </div>
       <div class="final-score-box" id="go-box2">
-        <div class="final-score-name">PLAYER 2</div>
+        <div class="final-score-name" id="go-name2">—</div>
         <div class="final-score-val" id="go-score2">0</div>
       </div>
     </div>
@@ -346,10 +368,35 @@ let myIndex = null;
 let gameState = null;
 let selectedCard = null;
 let lastPlayedCard = null;
+let myName = null;
 
 // ── CONNECTION ──
 
 window.addEventListener('load', connectWebSocket);
+window.addEventListener('load', initName);
+
+function initName() {
+  const input = document.getElementById('name-input');
+  const saved = (localStorage.getItem('rb_name') || '').trim();
+  if (saved) input.value = saved;
+  myName = input.value.trim();
+  input.addEventListener('input', () => {
+    myName = input.value.trim();
+    localStorage.setItem('rb_name', myName);
+  });
+}
+
+function requireName() {
+  const input = document.getElementById('name-input');
+  const name = (input?.value || '').trim();
+  if (!name) {
+    showLobbyError('Enter a username first.');
+    input?.focus();
+    return null;
+  }
+  localStorage.setItem('rb_name', name);
+  return name.slice(0, 18);
+}
 
 function connectWebSocket() {
   // Default: connect back to the same host that served the page (works when hosting
@@ -394,9 +441,17 @@ function handleServerMessage(msg) {
 function renderGameState(s) {
   updateHUD(s);
   const isFirst = s.myIndex === s.firstPlayer;
+  const names = normalizeNames(s);
+  const firstName = names[s.firstPlayer];
+  const secondName = names[1 - s.firstPlayer];
 
   switch (s.phase) {
     case 'waiting':
+      // Player 1 only sees this screen. Personalize it with opponent's name if known.
+      document.getElementById('waiting-room-sub').textContent =
+        `Share this code with ${secondName}:`;
+      document.getElementById('waiting-room-spinner').textContent =
+        `Waiting for ${secondName} to join...`;
       showScreen('waiting-room');
       break;
 
@@ -406,7 +461,7 @@ function renderGameState(s) {
         showScreen('pick1');
       } else {
         document.getElementById('waiting-msg').innerHTML =
-          `Player ${s.firstPlayer + 1} is choosing their card...`;
+          `${firstName} is choosing their card...`;
         showScreen('waiting');
       }
       break;
@@ -420,7 +475,7 @@ function renderGameState(s) {
         const clrStyle = clr === 'red' ? 'color:var(--red-light)' : 'color:#ccc';
         document.getElementById('waiting-msg').innerHTML =
           `You played a <strong style="${clrStyle}">${clr.toUpperCase()}</strong> card.<br>` +
-          `Waiting for Player ${(1 - s.firstPlayer) + 1} to respond...`;
+          `Waiting for ${secondName} to respond...`;
         showScreen('waiting');
       }
       break;
@@ -445,10 +500,11 @@ function updateHUD(s) {
   }
   hud.classList.remove('hidden');
 
+  const names = normalizeNames(s);
   const p1El = document.getElementById('hud-p1');
   const p2El = document.getElementById('hud-p2');
-  p1El.textContent = `P1: ${s.scores[0]}`;
-  p2El.textContent = `P2: ${s.scores[1]}`;
+  p1El.textContent = `${names[0]}: ${s.scores[0]}`;
+  p2El.textContent = `${names[1]}: ${s.scores[1]}`;
   p1El.classList.toggle('me', s.myIndex === 0);
   p2El.classList.toggle('me', s.myIndex === 1);
   document.getElementById('hud-round').textContent = `Round ${s.round} of 7`;
@@ -463,7 +519,8 @@ function setupPickScreen(s, mode) {
   const hintId    = isFirst ? 'pick1-hint'           : 'pick2-hint';
   const btnId     = isFirst ? 'btn-confirm-first'    : 'btn-confirm-second';
 
-  document.getElementById(labelId).textContent = `Player ${s.myIndex + 1} — Your Turn`;
+  const names = normalizeNames(s);
+  document.getElementById(labelId).textContent = `${names[s.myIndex]} — Your Turn`;
   document.getElementById(roundId).textContent = `Round ${s.round} of 7`;
 
   if (!isFirst) {
@@ -473,7 +530,7 @@ function setupPickScreen(s, mode) {
     const colorEl = document.getElementById('pick2-color-hint');
     colorEl.textContent = clr.toUpperCase();
     colorEl.style.color = clr === 'red' ? 'var(--red-light)' : '#ccc';
-    document.getElementById('pick2-opponent-name').textContent = `Player ${s.firstPlayer + 1}`;
+    document.getElementById('pick2-opponent-name').textContent = names[s.firstPlayer];
   }
 
   const container = document.getElementById(handId);
@@ -522,12 +579,13 @@ function setupRevealScreen(s) {
   const displayCard = myCard || lastPlayedCard;
   const myIdx = s.myIndex;
   const oppIdx = 1 - myIdx;
+  const names = normalizeNames(s);
 
   const myCardEl = document.getElementById('reveal-card-mine');
   myCardEl.className = `reveal-card ${CARD_COLORS[displayCard]}-card${winner === myIdx ? ' winner-card' : ''}`;
   myCardEl.querySelector('.rv-label').textContent = displayCard;
 
-  document.getElementById('reveal-name-opp').textContent = `Player ${oppIdx + 1}'s Card`;
+  document.getElementById('reveal-name-opp').textContent = `${names[oppIdx]}'s Card`;
 
   const resultEl = document.getElementById('reveal-result');
   if (winner === -1) {
@@ -556,41 +614,48 @@ function setupRevealScreen(s) {
 }
 
 function setupGameOverScreen(s) {
+  const names = normalizeNames(s);
   const [s1, s2] = s.scores;
   let title, trophy;
-  if (s1 > s2)      { title = 'Player 1 Wins!'; trophy = '🏆'; }
-  else if (s2 > s1) { title = 'Player 2 Wins!'; trophy = '🏆'; }
-  else              { title = "It's a Draw!";    trophy = '🤝'; }
+  if (s1 > s2)      { title = `${names[0]} Wins!`; trophy = '🏆'; }
+  else if (s2 > s1) { title = `${names[1]} Wins!`; trophy = '🏆'; }
+  else              { title = "It's a Draw!";       trophy = '🤝'; }
 
   document.getElementById('go-trophy').textContent = trophy;
   document.getElementById('go-title').textContent = title;
   document.getElementById('go-score1').textContent = s1;
   document.getElementById('go-score2').textContent = s2;
+  document.getElementById('go-name1').textContent = names[0].toUpperCase();
+  document.getElementById('go-name2').textContent = names[1].toUpperCase();
   document.getElementById('go-box1').classList.toggle('winner-box', s1 > s2);
   document.getElementById('go-box2').classList.toggle('winner-box', s2 > s1);
+}
+
+function normalizeNames(s) {
+  const raw = Array.isArray(s?.names) ? s.names : [];
+  const fallback = (idx) => `Player ${idx + 1}`;
+  const names = [raw[0] || fallback(0), raw[1] || fallback(1)].map(n => (n || '').toString().trim());
+  return [names[0] || fallback(0), names[1] || fallback(1)];
 }
 
 // ── ACTIONS ──
 
 function createGame() {
   if (!ws || ws.readyState !== 1) { connectWebSocket(); setTimeout(createGame, 300); return; }
-  ws.send(JSON.stringify({ type: 'create' }));
+  const name = requireName();
+  if (!name) return;
+  ws.send(JSON.stringify({ type: 'create', name }));
   showScreen('waiting-room');
 }
 
-function toggleJoinForm() {
-  const form = document.getElementById('join-form');
-  const visible = form.style.display !== 'none';
-  form.style.display = visible ? 'none' : 'flex';
-  if (!visible) document.getElementById('code-input').focus();
-}
-
 function joinGame() {
+  const name = requireName();
+  if (!name) return;
   const code = document.getElementById('code-input').value.trim().toUpperCase();
   if (code.length < 5) { showLobbyError('Enter the full 5-character code.'); return; }
   if (!ws || ws.readyState !== 1) { connectWebSocket(); setTimeout(joinGame, 300); return; }
   clearLobbyError();
-  ws.send(JSON.stringify({ type: 'join', code }));
+  ws.send(JSON.stringify({ type: 'join', code, name }));
 }
 
 function nextRound() {
@@ -617,7 +682,6 @@ function resetToLobby() {
   myIndex = null;
   selectedCard = null;
   document.getElementById('code-input').value = '';
-  document.getElementById('join-form').style.display = 'none';
   clearLobbyError();
   document.getElementById('hud').classList.add('hidden');
   if (!ws || ws.readyState !== 1) connectWebSocket();

@@ -7,7 +7,9 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve the client from the repo root (so `index.html` works whether you deploy
+// just the server, or host the client separately).
+app.use(express.static(__dirname));
 
 const CARD_LABELS = ['8', '9', '10', 'J', 'Q', 'K', 'A'];
 const CARD_RANKS  = { '8':1, '9':2, '10':3, 'J':4, 'Q':5, 'K':6, 'A':7 };
@@ -41,6 +43,7 @@ function buildStateForPlayer(room, playerIndex) {
     scores: [...g.scores],
     myIndex: playerIndex,
     firstPlayer: g.firstPlayer,
+    names: [...g.names],
     myHand: g.hands[playerIndex].map(c => ({ ...c })),
     announcedColor: g.announcedColor,
     reveal: null,
@@ -96,6 +99,7 @@ wss.on('connection', ws => {
     const room = rooms.get(ws.roomCode);
 
     if (msg.type === 'create') {
+      const name = (msg.name || '').toString().trim().slice(0, 18) || 'Player 1';
       const code = generateCode();
       const newRoom = {
         code,
@@ -106,6 +110,7 @@ wss.on('connection', ws => {
           scores: [0, 0],
           hands: [freshHand(), freshHand()],
           firstPlayer: 0,
+          names: [name, null],
           selectedCards: [null, null],
           announcedColor: null,
           winner: undefined,
@@ -115,6 +120,7 @@ wss.on('connection', ws => {
       rooms.set(code, newRoom);
       ws.roomCode = code;
       ws.playerIndex = 0;
+      ws.playerName = name;
       send(ws, { type: 'joined', playerIndex: 0, code });
       broadcastState(newRoom);
       return;
@@ -134,6 +140,9 @@ wss.on('connection', ws => {
       targetRoom.players[1] = ws;
       ws.roomCode = code;
       ws.playerIndex = 1;
+      const name = (msg.name || '').toString().trim().slice(0, 18) || 'Player 2';
+      ws.playerName = name;
+      targetRoom.game.names[1] = name;
       targetRoom.game.phase = 'pick1';
       send(ws, { type: 'joined', playerIndex: 1, code });
       broadcastState(targetRoom);
