@@ -352,8 +352,18 @@ let lastPlayedCard = null;
 window.addEventListener('load', connectWebSocket);
 
 function connectWebSocket() {
+  // Default: connect back to the same host that served the page (works when hosting
+  // frontend + backend together, e.g. Render/Fly/Railway).
+  //
+  // For GitHub Pages (static), provide a backend WebSocket URL via:
+  //   ?ws=wss://YOUR-BACKEND-HOST
+  // Example:
+  //   https://USERNAME.github.io/REPO/?ws=wss%3A%2F%2Fyour-backend.onrender.com
+  const params = new URLSearchParams(location.search);
+  const override = params.get('ws');
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  ws = new WebSocket(`${proto}//${location.host}`);
+  const url = override ? override : `${proto}//${location.host}`;
+  ws = new WebSocket(url);
   ws.addEventListener('message', e => handleServerMessage(JSON.parse(e.data)));
   ws.addEventListener('close', () => {
     if (gameState && gameState.phase !== 'game_over') showScreen('disconnect');
