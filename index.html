@@ -3,324 +3,826 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Red &amp; Black</title>
+<title>dealt · Red &amp; Black</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --red: #c0392b;
-    --red-light: #e74c3c;
-    --gold: #f39c12;
-    --bg: #0f0f1a;
-    --surface: #1e1e30;
+    --bg: #111110;
+    --bg-mid: #1a1a18;
+    --bg-surface: #222220;
+    --bg-card: #2a2a27;
+    --bg-border: #3a3a36;
+    --accent: #e8e3db;
+    --accent-light: #c8c3bb;
+    --accent-glow: rgba(232,227,219,0.08);
+    --gold: #c9a84c;
+    --fg: #f0ece6;
+    --muted: #7a7570;
+    --red-suit: #d95f5f;
+    --card-face: #faf8f4;
+    --glass-bg: linear-gradient(135deg, rgba(34,34,32,0.97) 0%, rgba(22,22,20,0.99) 100%);
+    --glass-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 32px 80px rgba(0,0,0,0.7);
+    --page-glow: radial-gradient(ellipse 60% 50% at 50% 100%, rgba(200,168,76,0.05) 0%, transparent 70%);
+    --btn-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    --btn-shadow-hover: 0 8px 28px rgba(0,0,0,0.55);
+    --face-down-bg: linear-gradient(135deg, #1e1e1c 0%, #2a2a27 100%);
+    --face-down-border: rgba(255,255,255,0.1);
+    --face-down-inner: rgba(255,255,255,0.06);
+    --face-down-pattern: rgba(255,255,255,0.03);
+    --hud-bg: rgba(17,17,16,0.78);
+    --hud-border: rgba(255,255,255,0.04);
+    --input-bg: rgba(0,0,0,0.4);
+    --particle-border: rgba(255,255,255,0.07);
+    --particle-bg: rgba(20,20,18,0.6);
+    --toggle-bg: rgba(255,255,255,0.06);
+    --toggle-border: rgba(255,255,255,0.1);
+    --tab-bar-bg: rgba(0,0,0,0.22);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
     --card-w: 76px;
     --card-h: 108px;
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
   }
 
-  body {
-    font-family: 'Georgia', serif;
+  /* ── Light / warm theme ── */
+  html.theme-light {
+    --bg: #f5efe4;
+    --bg-mid: #ede4d6;
+    --bg-surface: #e8ddd0;
+    --bg-card: #dfd3c2;
+    --bg-border: #c8b89a;
+    --accent: #6b7280;
+    --accent-light: #6b7280;
+    --accent-glow: rgba(107,114,128,0.12);
+    --gold: #a07020;
+    --fg: #2c1a0e;
+    --muted: #8a7060;
+    --red-suit: #c0392b;
+    --card-face: #fffdf8;
+    --glass-bg: linear-gradient(135deg, rgba(255,252,245,0.97) 0%, rgba(240,232,220,0.99) 100%);
+    --glass-shadow: 0 0 0 1px rgba(139,69,19,0.1), 0 16px 48px rgba(80,40,10,0.15), 0 2px 8px rgba(80,40,10,0.08);
+    --page-glow: radial-gradient(ellipse 70% 50% at 50% 100%, rgba(160,112,32,0.07) 0%, transparent 70%);
+    --btn-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    --btn-shadow-hover: 0 8px 28px rgba(0,0,0,0.25);
+    --face-down-bg: linear-gradient(135deg, #6b3a2a 0%, #8b4513 100%);
+    --face-down-border: rgba(255,200,150,0.35);
+    --face-down-inner: rgba(255,200,150,0.18);
+    --face-down-pattern: rgba(255,200,150,0.07);
+    --hud-bg: rgba(240,232,220,0.88);
+    --hud-border: rgba(0,0,0,0.07);
+    --input-bg: rgba(255,255,255,0.65);
+    --particle-border: rgba(139,69,19,0.22);
+    --particle-bg: rgba(160,130,95,0.12);
+    --toggle-bg: rgba(0,0,0,0.05);
+    --toggle-border: rgba(0,0,0,0.12);
+    --tab-bar-bg: rgba(0,0,0,0.05);
+  }
+
+  html, body {
+    width: 100%; height: 100%;
     background: var(--bg);
-    color: #eee;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    color: var(--fg);
+    font-family: var(--font-body);
+    overflow: hidden;
+    transition: background 0.4s var(--ease-out), color 0.4s var(--ease-out);
   }
 
-  #app {
-    width: 100%;
-    max-width: 480px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 72px 16px 24px;
-    position: relative;
+  /* ── Floating particles ── */
+  .bg-particles {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
   }
-
-  /* ── SCREENS ── */
-  .screen { display: none; flex-direction: column; align-items: center; width: 100%; gap: 18px; animation: fadeIn 0.25s ease; }
-  .screen.active { display: flex; }
-  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
-
-  /* ── HUD ── */
-  #hud {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(4px);
+  .particle {
+    position: absolute;
+    width: 36px; height: 50px;
+    border-radius: 5px;
+    border: 1px solid var(--particle-border);
+    background: var(--particle-bg);
+    backdrop-filter: blur(2px);
+    transition: border-color 0.4s, background 0.4s;
+    animation: floatCard linear infinite;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
     font-size: 13px;
+    opacity: 0;
+  }
+  @keyframes floatCard {
+    0%   { transform: translateY(110vh) rotate(var(--rot-start)); opacity: 0; }
+    8%   { opacity: var(--max-op); }
+    90%  { opacity: var(--max-op); }
+    100% { transform: translateY(-20vh) rotate(var(--rot-end)); opacity: 0; }
+  }
+
+  /* ── Page glow ── */
+  .page-glow {
+    position: fixed; inset: 0; pointer-events: none;
+    background: var(--page-glow);
+    z-index: 1;
+  }
+
+  /* ── Screens ── */
+  .screen {
+    position: absolute; inset: 0;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    overflow-y: auto; padding: 80px 24px 32px;
     z-index: 10;
-    transition: opacity 0.2s;
+    animation: screenIn 0.35s var(--ease-out) both;
+  }
+  .screen.active { display: flex; }
+  @keyframes screenIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.99); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── Glass card ── */
+  .glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--bg-border);
+    border-radius: 20px;
+    box-shadow: var(--glass-shadow);
+    transition: background 0.4s var(--ease-out), border-color 0.4s, box-shadow 0.4s;
+  }
+
+  /* ── Logo ── */
+  .logo {
+    font-family: var(--font-display);
+    font-style: italic;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--fg);
+  }
+  .logo-mark {
+    display: inline-block;
+    width: 9px; height: 9px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-left: 2px;
+    position: relative; top: -5px;
+  }
+
+  /* ── HUD / Top nav ── */
+  #hud {
+    position: fixed; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px;
+    background: var(--hud-bg);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--hud-border);
+    z-index: 20;
+    transition: opacity 0.25s, background 0.4s, border-color 0.4s;
   }
   #hud.hidden { opacity: 0; pointer-events: none; }
-  .hud-score { font-size: 15px; font-weight: bold; }
-  .hud-score.me { color: var(--gold); }
-  #hud-round { color: #aaa; }
-
-  /* ── TYPOGRAPHY ── */
-  .game-title { font-size: 50px; font-weight: bold; letter-spacing: 2px; line-height: 1; }
-  .game-title .red { color: var(--red-light); }
-  .game-title .amp { color: #555; font-size: 34px; margin: 0 6px; }
-  .game-title .blk { color: #ccc; }
-  .subtitle { color: #777; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; }
-  .screen-title { font-size: 22px; font-weight: bold; text-align: center; }
-  .screen-sub { color: #888; font-size: 14px; text-align: center; line-height: 1.5; max-width: 300px; }
-  .player-label { font-size: 20px; font-weight: bold; text-align: center; letter-spacing: 0.5px; }
-  .round-label { color: #aaa; font-size: 13px; }
-  .instruction { color: #bbb; font-size: 14px; text-align: center; max-width: 300px; line-height: 1.5; }
-
-  /* ── DIVIDER ── */
-  .divider { width: 50px; height: 2px; background: #2a2a3e; border-radius: 1px; }
-
-  /* ── BUTTONS ── */
-  .btn {
-    padding: 13px 32px;
-    border: none; border-radius: 6px;
-    font-size: 15px; font-family: inherit;
-    cursor: pointer; letter-spacing: 0.4px;
-    transition: transform 0.1s, box-shadow 0.1s;
-    min-width: 200px;
+  .hud-score { font-size: 14px; color: var(--muted); font-weight: 400; }
+  .hud-score.me { color: var(--gold); font-weight: 500; }
+  #hud-round {
+    font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em;
   }
-  .btn:active { transform: scale(0.97); }
-  .btn-primary { background: var(--gold); color: #1a1a1a; font-weight: bold; }
-  .btn-secondary { background: var(--surface); color: #ccc; border: 1px solid #3a3a50; }
-  .btn-disabled { opacity: 0.35; cursor: not-allowed; }
-
-  /* ── LOBBY ── */
-  .lobby-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 260px; }
-  .or-row { display: flex; align-items: center; gap: 10px; color: #444; font-size: 13px; width: 100%; }
-  .or-row::before, .or-row::after { content:''; flex:1; height:1px; background:#2a2a3e; }
-  .join-form { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
-  .name-input {
-    padding: 12px 16px;
+  .hud-logo {
+    font-family: var(--font-display);
+    font-style: italic;
     font-size: 18px;
-    text-align: center;
-    font-family: inherit;
-    background: var(--surface);
-    border: 1px solid #3a3a50;
-    border-radius: 6px;
-    color: #fff;
-    outline: none;
-    width: 100%;
+    color: var(--muted);
+    letter-spacing: -0.02em;
   }
-  .name-input:focus { border-color: var(--gold); }
-  .code-input {
-    padding: 12px 16px;
-    font-size: 26px; letter-spacing: 8px; text-align: center;
-    font-family: 'Courier New', monospace;
-    background: var(--surface); border: 1px solid #3a3a50;
-    border-radius: 6px; color: #fff; text-transform: uppercase; outline: none;
-    width: 100%;
-  }
-  .code-input:focus { border-color: var(--gold); }
-  .error-msg { color: var(--red-light); font-size: 13px; text-align: center; min-height: 18px; }
 
-  /* ── WAITING ROOM ── */
-  .big-code {
-    font-family: 'Courier New', monospace;
-    font-size: 46px; letter-spacing: 10px;
-    color: var(--gold);
-    background: var(--surface);
-    padding: 18px 28px; border-radius: 10px;
-    border: 1px solid #2a2a3e;
-    text-align: center;
+  /* ── Buttons ── */
+  .btn-primary {
+    background: var(--fg);
+    color: var(--bg);
+    border: none; border-radius: 12px;
+    padding: 14px 32px;
+    font-family: var(--font-body); font-size: 15px; font-weight: 500;
+    cursor: pointer; letter-spacing: 0.02em;
+    transition: all 0.2s var(--ease-spring);
+    box-shadow: var(--btn-shadow);
+    width: 100%;
   }
-  .spinner-row { display: flex; align-items: center; gap: 10px; color: #666; font-size: 13px; }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--btn-shadow-hover);
+    filter: brightness(1.06);
+  }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled, .btn-primary.btn-disabled {
+    opacity: 0.35; cursor: not-allowed;
+    transform: none !important;
+    filter: none;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent-light);
+    border: 1px solid var(--bg-border); border-radius: 12px;
+    padding: 14px 32px;
+    font-family: var(--font-body); font-size: 15px; font-weight: 400;
+    cursor: pointer; letter-spacing: 0.02em;
+    transition: all 0.2s var(--ease-out);
+    width: 100%;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    transform: translateY(-1px);
+  }
+  .btn-secondary:disabled, .btn-secondary.btn-disabled {
+    opacity: 0.35; cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* ── Input ── */
+  .input-field {
+    background: var(--input-bg);
+    border: 1px solid var(--bg-border); border-radius: 12px;
+    padding: 14px 18px;
+    color: var(--fg);
+    font-family: var(--font-body); font-size: 15px;
+    width: 100%; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.04em;
+  }
+  .input-field::placeholder { color: var(--muted); }
+  .input-field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  /* ── Field label ── */
+  .field-label {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--muted);
+    margin-bottom: 8px; font-weight: 500;
+  }
+
+  /* ── Tab bar ── */
+  .tab-bar {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    background: var(--tab-bar-bg);
+    padding: 6px;
+    transition: background 0.4s;
+  }
+  .tab-btn {
+    background: transparent; border: none; border-radius: 9px;
+    color: var(--muted);
+    padding: 11px 16px;
+    font-family: var(--font-body); font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+  }
+  .tab-btn.active {
+    background: var(--glass-bg);
+    color: var(--fg);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  }
+  .tab-icon { font-size: 12px; opacity: 0.85; }
+
+  /* ── Spinner ── */
   .spinner {
-    width: 18px; height: 18px;
-    border: 2px solid #333; border-top-color: var(--gold);
+    width: 18px; height: 18px; flex-shrink: 0;
+    border: 2px solid var(--bg-border);
+    border-top-color: var(--gold);
     border-radius: 50%;
     animation: spin 0.9s linear infinite;
   }
+  .spinner.lg { width: 28px; height: 28px; border-width: 3px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── WAITING / THINKING ── */
-  .waiting-box {
-    background: var(--surface);
-    border: 1px solid #2a2a3e;
-    border-radius: 10px;
-    padding: 28px 32px;
-    text-align: center;
-    width: 100%;
-    max-width: 340px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
+  /* ── Pill ── */
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(232,227,219,0.15);
+    border-radius: 100px; padding: 5px 14px;
+    font-size: 12px; color: var(--accent-light); letter-spacing: 0.04em;
   }
-  #waiting-msg { font-size: 15px; color: #bbb; line-height: 1.6; }
+  .pill-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
 
-  /* ── CARDS ── */
-  .hand { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; margin: 4px 0; }
+  /* ── Error ── */
+  .error-msg { color: var(--red-suit); font-size: 13px; text-align: center; min-height: 18px; }
+
+  /* ── Typography ── */
+  .screen-title {
+    font-family: var(--font-display);
+    font-size: 26px; font-weight: 600; text-align: center;
+  }
+  .player-label {
+    font-family: var(--font-display);
+    font-size: 20px; font-weight: 600; text-align: center;
+  }
+  .round-label {
+    font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em; text-align: center;
+  }
+  .instruction {
+    color: var(--muted); font-size: 13px; text-align: center;
+    letter-spacing: 0.02em; line-height: 1.6; max-width: 300px;
+  }
+
+  /* ── Room code display ── */
+  .big-code {
+    font-family: var(--font-display);
+    font-size: 46px; letter-spacing: 0.22em;
+    color: var(--gold); font-weight: 600; text-align: center;
+  }
+
+  /* ── Game cards ── */
+  .hand {
+    display: flex; flex-wrap: wrap;
+    gap: 10px; justify-content: center;
+  }
   .card {
     width: var(--card-w); height: var(--card-h);
-    border-radius: 9px; border: 2px solid #2a2a3e;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.1);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    cursor: pointer; font-family: 'Georgia', serif;
+    cursor: pointer; font-family: var(--font-display);
     position: relative; user-select: none;
-    background: var(--surface);
-    transition: transform 0.13s, border-color 0.13s, box-shadow 0.13s;
+    background: var(--card-face);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.15s var(--ease-spring), box-shadow 0.15s;
   }
-  .card:hover:not(.played) { transform: translateY(-6px); box-shadow: 0 8px 18px rgba(0,0,0,0.5); }
-  .card.red-card { color: var(--red-light); }
-  .card.black-card { color: #ddd; }
-  .card.selected { border-color: var(--gold); box-shadow: 0 0 14px rgba(243,156,18,0.55); transform: translateY(-8px); }
-  .card.played { opacity: 0.18; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-  .card-corner { position: absolute; font-size: 11px; font-weight: bold; line-height: 1; }
-  .card-corner.tl { top: 6px; left: 8px; }
-  .card-corner.br { bottom: 6px; right: 8px; transform: rotate(180deg); }
-  .card-center { font-size: 26px; font-weight: bold; }
-  .card-dot { width: 7px; height: 7px; border-radius: 50%; position: absolute; bottom: 20px; }
-  .red-card .card-dot { background: var(--red-light); }
-  .black-card .card-dot { background: #666; }
+  .card:hover:not(.played) {
+    transform: translateY(-10px) scale(1.04);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 4px 8px rgba(0,0,0,0.3);
+  }
+  .card.red-card  { color: var(--red-suit); }
+  .card.black-card { color: #1a1a1a; }
+  .card.selected {
+    transform: translateY(-12px) scale(1.06) !important;
+    box-shadow: 0 0 0 3px var(--gold), 0 20px 40px rgba(0,0,0,0.6) !important;
+  }
+  .card.played {
+    opacity: 0.18; cursor: not-allowed;
+    transform: none !important; box-shadow: none !important;
+  }
+  .card-corner {
+    position: absolute;
+    font-size: 12px; font-weight: 700; line-height: 1;
+  }
+  .card-corner.tl { top: 7px; left: 9px; }
+  .card-corner.br { bottom: 7px; right: 9px; transform: rotate(180deg); }
+  .card-center { font-size: 26px; font-weight: 700; }
+  .card-dot {
+    position: absolute; bottom: 20px;
+    font-size: 13px; line-height: 1;
+  }
+  .red-card  .card-dot::after { content: '♥'; color: var(--red-suit); }
+  .black-card .card-dot::after { content: '♠'; color: #333; }
 
-  .confirm-area { display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 70px; }
-  .selected-hint { color: var(--gold); font-size: 13px; }
+  /* ── Confirm area ── */
+  .confirm-area {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 10px; min-height: 68px; width: 100%;
+  }
+  .selected-hint { color: var(--gold); font-size: 13px; letter-spacing: 0.04em; }
 
-  /* ── ANNOUNCE BANNER ── */
+  /* ── Announce banner ── */
   .announce-banner {
-    width: 100%; max-width: 340px;
-    padding: 16px 20px; border-radius: 10px;
-    text-align: center;
+    width: 100%; padding: 16px 20px; border-radius: 12px; text-align: center;
   }
-  .announce-banner.red-banner { background: rgba(192,57,43,0.14); border: 1.5px solid var(--red); }
-  .announce-banner.black-banner { background: rgba(255,255,255,0.04); border: 1.5px solid #444; }
-  .announce-who { font-size: 13px; color: #888; margin-bottom: 4px; }
-  .announce-color-text { font-size: 18px; font-weight: bold; }
+  .announce-banner.red-banner {
+    background: rgba(217,95,95,0.08); border: 1px solid rgba(217,95,95,0.25);
+  }
+  .announce-banner.black-banner {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  }
+  .announce-who {
+    font-size: 11px; color: var(--muted); margin-bottom: 5px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .announce-color-text { font-size: 15px; font-weight: 400; color: var(--accent-light); }
 
-  /* ── REVEAL ── */
-  .reveal-row { display: flex; gap: 36px; align-items: flex-start; justify-content: center; }
-  .reveal-slot { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  /* ── Waiting box ── */
+  .waiting-box {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 18px; padding: 40px 36px; text-align: center;
+  }
+
+  /* ── Reveal ── */
+  .reveal-row {
+    display: flex; gap: 40px; align-items: flex-start; justify-content: center;
+  }
+  .reveal-slot {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
   .reveal-card {
-    width: 90px; height: 126px; border-radius: 10px;
+    width: 90px; height: 126px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 30px; font-weight: bold; font-family: 'Georgia', serif;
-    background: var(--surface); border: 2px solid #2a2a3e;
+    font-size: 32px; font-weight: 700; font-family: var(--font-display);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+    position: relative; flex-shrink: 0;
   }
-  .reveal-card.red-card { color: var(--red-light); border-color: var(--red); }
-  .reveal-card.black-card { color: #ddd; border-color: #555; }
-  .reveal-card.winner-card { box-shadow: 0 0 22px rgba(243,156,18,0.65); border-color: var(--gold); }
+  .reveal-card.red-card {
+    background: var(--card-face); color: var(--red-suit);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .reveal-card.black-card {
+    background: var(--card-face); color: #1a1a1a;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .reveal-card.winner-card {
+    box-shadow: 0 0 0 3px var(--gold), 0 12px 40px rgba(201,168,76,0.25);
+  }
   .reveal-card.card-back {
-    background: repeating-linear-gradient(45deg, #1a1a2c, #1a1a2c 5px, #202035 5px, #202035 10px);
-    border-color: #2a2a3e;
-    color: #2e2e4a;
-    font-size: 38px;
+    background: var(--face-down-bg);
+    border: 2px solid var(--face-down-border);
+    color: rgba(255,255,255,0.12); font-size: 36px;
   }
-  .reveal-player-name { font-size: 13px; color: #888; }
-  .reveal-result { font-size: 20px; font-weight: bold; text-align: center; }
-  .reveal-result.win { color: var(--gold); }
-  .reveal-result.lose { color: #c0392b; }
-  .reveal-result.tie { color: #666; }
+  .reveal-card.card-back::after {
+    content: '';
+    position: absolute; inset: 8px;
+    border: 1px solid var(--face-down-inner);
+    border-radius: 8px;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent, transparent 4px,
+      var(--face-down-pattern) 4px, var(--face-down-pattern) 8px
+    );
+  }
+  .reveal-player-name {
+    font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .reveal-result {
+    font-family: var(--font-display);
+    font-size: 20px; font-weight: 600; text-align: center;
+  }
+  .reveal-result.win  { color: var(--gold); }
+  .reveal-result.lose { color: var(--red-suit); }
+  .reveal-result.tie  { color: var(--muted); }
 
-  /* ── GAME OVER ── */
-  .trophy { font-size: 68px; }
-  .final-title { font-size: 26px; font-weight: bold; text-align: center; }
-  .final-scores { display: flex; gap: 28px; justify-content: center; }
-  .final-score-box { text-align: center; padding: 20px 28px; background: var(--surface); border-radius: 10px; border: 1px solid #2a2a3e; }
-  .final-score-box.winner-box { border-color: var(--gold); box-shadow: 0 0 16px rgba(243,156,18,0.25); }
-  .final-score-name { font-size: 12px; color: #777; margin-bottom: 6px; letter-spacing: 0.5px; }
-  .final-score-val { font-size: 44px; font-weight: bold; color: var(--gold); }
+  /* ── Game over ── */
+  .final-scores { display: flex; gap: 20px; justify-content: center; }
+  .final-score-box {
+    text-align: center; padding: 24px 32px;
+    background: var(--bg-surface);
+    border-radius: 16px; border: 1px solid var(--bg-border);
+    min-width: 120px;
+  }
+  .final-score-box.winner-box {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold), 0 0 32px rgba(201,168,76,0.12);
+  }
+  .final-score-name {
+    font-size: 11px; color: var(--muted);
+    margin-bottom: 8px; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .final-score-val {
+    font-family: var(--font-display);
+    font-size: 48px; font-weight: 700; color: var(--gold);
+  }
+
+  /* ── Screen content wrapper ── */
+  .screen-inner {
+    width: 100%; max-width: 440px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 20px;
+  }
+
+  /* ── Game select card ── */
+  .game-select-card {
+    border-radius: 16px;
+    border: 1px solid var(--bg-border);
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+    transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s var(--ease-out), background 0.4s;
+  }
+  .game-select-card.selected {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px var(--gold), 0 8px 32px rgba(0,0,0,0.12);
+  }
+  .game-select-check {
+    position: absolute; top: 12px; right: 12px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: #fff;
+    opacity: 0; transform: scale(0.5);
+    transition: all 0.2s var(--ease-spring);
+  }
+  .game-select-card.selected .game-select-check { opacity: 1; transform: scale(1); }
+  .tag-pill {
+    font-size: 11px; padding: 3px 10px;
+    border-radius: 100px;
+    background: var(--accent-glow);
+    border: 1px solid var(--bg-border);
+    color: var(--accent-light);
+    letter-spacing: 0.04em;
+    transition: background 0.4s, border-color 0.4s;
+  }
+  /* Game select inline nav */
+  .gs-nav {
+    width: 100%; display: flex; align-items: center;
+    justify-content: space-between; padding: 28px 0 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── Theme toggle ── */
+  #theme-toggle {
+    position: fixed; bottom: 24px; right: 24px;
+    z-index: 25;
+    background: var(--toggle-bg);
+    border: 1px solid var(--toggle-border);
+    border-radius: 100px;
+    padding: 8px 14px;
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    font-family: var(--font-body); font-size: 12px;
+    color: var(--muted); letter-spacing: 0.06em;
+    transition: all 0.2s var(--ease-out), background 0.4s, border-color 0.4s;
+    backdrop-filter: blur(8px);
+  }
+  #theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--fg);
+    transform: translateY(-2px);
+  }
+  .toggle-track {
+    width: 28px; height: 16px;
+    border-radius: 100px;
+    background: var(--gold);
+    position: relative;
+    transition: background 0.4s;
+    flex-shrink: 0;
+  }
+  html.theme-light .toggle-track { background: #b8b0a4; }
+  .toggle-knob {
+    position: absolute; top: 2px; left: 2px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.25s var(--ease-spring);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transform: translateX(12px);
+  }
+  html.theme-light .toggle-knob { transform: translateX(0); }
 </style>
 </head>
 <body>
-<div id="app">
 
-  <!-- HUD -->
-  <div id="hud" class="hidden">
-    <div class="hud-score" id="hud-p1">—: 0</div>
-    <div id="hud-round">Round 1 of 7</div>
-    <div class="hud-score" id="hud-p2">—: 0</div>
-  </div>
+<!-- Floating card particles -->
+<div class="bg-particles" id="bg-particles"></div>
+<!-- Page glow -->
+<div class="page-glow"></div>
 
-  <!-- LOBBY -->
-  <div class="screen active" id="screen-lobby">
-    <div class="game-title">
-      <span class="red">Red</span><span class="amp">&amp;</span><span class="blk">Black</span>
-    </div>
-    <div class="subtitle">Two-Player Card Game</div>
-    <div class="divider"></div>
-    <div class="lobby-actions">
-      <input
-        class="name-input"
-        id="name-input"
-        maxlength="18"
-        placeholder="Your name"
-        autocomplete="nickname"
-        autocorrect="off"
-        spellcheck="false"
-        onkeydown="if(event.key==='Enter')createGame()"
-      >
-      <button class="btn btn-primary" onclick="createGame()">Create Game</button>
-      <div class="or-row">or</div>
-      <div class="join-form" id="join-form">
-        <input class="code-input" id="code-input" maxlength="5" placeholder="XXXXX"
-          autocomplete="off" autocorrect="off" spellcheck="false"
-          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
-          onkeydown="if(event.key==='Enter')joinGame()">
-        <button class="btn btn-primary" onclick="joinGame()">Join Game</button>
+<!-- Theme toggle -->
+<button id="theme-toggle" onclick="toggleTheme()" title="Toggle light / dark">
+  <span id="theme-label">Light</span>
+  <div class="toggle-track"><div class="toggle-knob"></div></div>
+</button>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+  <div class="hud-score" id="hud-p1">—: 0</div>
+  <div id="hud-round">Round 1 of 7</div>
+  <div class="hud-score" id="hud-p2">—: 0</div>
+</div>
+
+<!-- ── LOBBY ── -->
+<div class="screen active" id="screen-lobby" style="padding-top:0;">
+  <div class="screen-inner">
+    <!-- Hero -->
+    <div style="text-align:center; padding-top:24px;">
+      <div class="logo" style="font-size:58px; margin-bottom:14px;">
+        dealt<span class="logo-mark" style="width:12px;height:12px;top:-7px;"></span>
       </div>
-      <div class="error-msg" id="lobby-error"></div>
+      <p style="color:var(--muted); font-size:13px; letter-spacing:0.06em; line-height:1.6;">
+        Red &amp; Black · Two-Player Card Game
+      </p>
+    </div>
+
+    <!-- Glass card: tabs flush at top, content below -->
+    <div class="glass-card" style="width:100%; overflow:hidden; padding:0;">
+
+      <!-- Tab bar with margin inside the card -->
+      <div class="tab-bar" style="margin:24px 24px 0; border-radius:12px;">
+        <button class="tab-btn active" id="tab-create" onclick="switchTab('create')">
+          <span class="tab-icon">◆</span> Create Game
+        </button>
+        <button class="tab-btn" id="tab-join" onclick="switchTab('join')">
+          <span class="tab-icon">⊞</span> Join Game
+        </button>
+      </div>
+
+      <!-- Create tab content -->
+      <div id="tab-create-content" style="padding:24px; display:flex; flex-direction:column; gap:16px;">
+        <div>
+          <div class="field-label">Your name</div>
+          <input class="input-field" id="name-input" maxlength="18" placeholder="Enter your name"
+            autocomplete="nickname" autocorrect="off" spellcheck="false"
+            onkeydown="if(event.key==='Enter')createGame()">
+        </div>
+        <button class="btn-primary" onclick="createGame()">Create a Room</button>
+        <p style="color:var(--muted); font-size:12px; text-align:center; line-height:1.6;">
+          You'll receive a room code to share with friends
+        </p>
+      </div>
+
+      <!-- Join tab content -->
+      <div id="tab-join-content" style="padding:24px; display:none; flex-direction:column; gap:16px;">
+        <div>
+          <div class="field-label">Your name</div>
+          <input class="input-field" id="name-input-join" maxlength="18" placeholder="Enter your name"
+            autocomplete="nickname" autocorrect="off" spellcheck="false">
+        </div>
+        <div>
+          <div class="field-label">Room code</div>
+          <input class="input-field" id="code-input" maxlength="5" placeholder="XXXXX"
+            style="text-align:center; font-family:var(--font-display); font-size:26px; letter-spacing:0.28em; text-transform:uppercase; padding:16px;"
+            autocomplete="off" autocorrect="off" spellcheck="false"
+            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+            onkeydown="if(event.key==='Enter')joinGame()">
+        </div>
+        <button class="btn-primary" onclick="joinGame()">Join Room</button>
+      </div>
+
+      <div class="error-msg" id="lobby-error" style="padding:0 24px 16px; margin-top:-4px;"></div>
+    </div>
+
+    <!-- Suits -->
+    <div style="display:flex; gap:18px; justify-content:center; padding-bottom:16px;">
+      <span style="font-size:18px; color:var(--bg-border);">♠</span>
+      <span style="font-size:18px; color:var(--red-suit);">♥</span>
+      <span style="font-size:18px; color:var(--red-suit);">♦</span>
+      <span style="font-size:18px; color:var(--bg-border);">♣</span>
     </div>
   </div>
+</div>
 
-  <!-- WAITING ROOM -->
-  <div class="screen" id="screen-waiting-room">
-    <div class="screen-title">Waiting for Opponent</div>
-    <div class="screen-sub" id="waiting-room-sub">Share this code with your opponent:</div>
-    <div class="big-code" id="room-code-value">XXXXX</div>
-    <button class="btn btn-secondary" id="copy-btn" onclick="copyCode()">Copy Code</button>
-    <div class="spinner-row">
+<!-- ── GAME SELECT ── -->
+<div class="screen" id="screen-game-select" style="padding-top:0; justify-content:flex-start; overflow-y:auto;">
+  <div class="screen-inner" style="max-width:520px; gap:20px;">
+
+    <!-- Inline nav: logo left, room code right -->
+    <div class="gs-nav">
+      <div class="logo" style="font-size:20px;">
+        dealt<span class="logo-mark" style="width:8px;height:8px;top:-4px;"></span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.1em;">Room</span>
+        <span id="game-select-code" style="font-family:var(--font-display); color:var(--gold); font-size:20px; letter-spacing:0.2em; font-weight:600;">XXXXX</span>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div style="width:100%;">
+      <div class="round-label" style="text-align:left; margin-bottom:8px;">You're the host</div>
+      <div style="font-family:var(--font-display); font-size:30px; font-weight:600; line-height:1.1;">Choose a game</div>
+    </div>
+
+    <!-- Red & Black game card -->
+    <div class="game-select-card selected">
+      <div class="game-select-check">✓</div>
+      <div style="display:flex;">
+        <!-- Felt preview -->
+        <div style="width:148px; flex-shrink:0; min-height:120px;
+          background:radial-gradient(ellipse at center,#1e3a22 0%,#0d1f10 100%);
+          display:flex; align-items:center; justify-content:center;">
+          <div style="position:relative; width:72px; height:70px;">
+            <div style="position:absolute; left:0; top:8px; transform:rotate(-8deg);
+              width:44px; height:62px; background:var(--card-face); border-radius:6px;
+              border:1px solid rgba(0,0,0,0.1); box-shadow:0 3px 10px rgba(0,0,0,0.5);
+              display:flex; align-items:center; justify-content:center;
+              font-family:var(--font-display); font-weight:700; font-size:17px; color:var(--red-suit);">A</div>
+            <div style="position:absolute; left:14px; top:4px; transform:rotate(0deg);
+              width:44px; height:62px; background:var(--card-face); border-radius:6px;
+              border:1px solid rgba(0,0,0,0.1); box-shadow:0 3px 10px rgba(0,0,0,0.5);
+              display:flex; align-items:center; justify-content:center;
+              font-family:var(--font-display); font-weight:700; font-size:17px; color:#1a1a1a;">K</div>
+            <div style="position:absolute; left:28px; top:8px; transform:rotate(8deg);
+              width:44px; height:62px; background:var(--card-face); border-radius:6px;
+              border:1px solid rgba(0,0,0,0.1); box-shadow:0 3px 10px rgba(0,0,0,0.5);
+              display:flex; align-items:center; justify-content:center;
+              font-family:var(--font-display); font-weight:700; font-size:17px; color:var(--red-suit);">Q</div>
+          </div>
+        </div>
+        <!-- Info -->
+        <div style="padding:18px 20px; flex:1; background:var(--bg-surface); transition:background 0.4s;">
+          <div style="font-family:var(--font-display); font-size:19px; font-weight:700; margin-bottom:6px;">Red &amp; Black</div>
+          <div style="color:var(--muted); font-size:12px; line-height:1.5; margin-bottom:12px;">
+            Play higher than your opponent — knowing only the color of their card
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+            <span class="tag-pill">2 Players</span>
+            <span class="tag-pill">7 Rounds</span>
+            <span class="tag-pill">Bluff</span>
+          </div>
+          <div style="font-size:11px; color:var(--muted);">⏱ 5–10 min</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Waiting status -->
+    <div style="display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13px;">
+      <div class="spinner"></div>
+      <span id="game-select-spinner">Waiting for your opponent to join…</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── WAITING ROOM ── -->
+<div class="screen" id="screen-waiting-room" style="padding-top:0;">
+  <div class="screen-inner">
+    <div style="text-align:center;">
+      <div class="logo" style="font-size:20px; color:var(--muted); margin-bottom:16px;">
+        dealt<span class="logo-mark" style="width:8px;height:8px;top:-4px;"></span>
+      </div>
+      <div class="screen-title">Waiting for Opponent</div>
+      <p class="instruction" id="waiting-room-sub" style="margin-top:8px;">
+        Share this code with your opponent:
+      </p>
+    </div>
+
+    <div class="glass-card" style="padding:28px 36px; width:100%; text-align:center;">
+      <div class="field-label" style="margin-bottom:12px;">Room Code</div>
+      <div class="big-code" id="room-code-value">XXXXX</div>
+    </div>
+
+    <button class="btn-secondary" id="copy-btn" onclick="copyCode()" style="max-width:200px;">
+      Copy Code
+    </button>
+
+    <div style="display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13px;">
       <div class="spinner"></div>
       <span id="waiting-room-spinner">Waiting for your opponent to join...</span>
     </div>
   </div>
+</div>
 
-  <!-- FIRST PLAYER PICK -->
-  <div class="screen" id="screen-pick1">
-    <div class="player-label" id="pick1-player-label">Your Turn</div>
-    <div class="round-label" id="pick1-round-label">Round 1 of 7</div>
+<!-- ── FIRST PLAYER PICK ── -->
+<div class="screen" id="screen-pick1">
+  <div class="screen-inner" style="max-width:500px; gap:16px;">
+    <div style="text-align:center;">
+      <div class="player-label" id="pick1-player-label">Your Turn</div>
+      <div class="round-label" id="pick1-round-label" style="margin-top:5px;">Round 1 of 7</div>
+    </div>
     <div class="instruction">Choose a card. Your opponent will only learn its color.</div>
     <div class="hand" id="hand-first"></div>
     <div class="confirm-area">
-      <div class="selected-hint" id="pick1-hint" style="visibility:hidden">Card selected — confirm when ready</div>
-      <button class="btn btn-primary btn-disabled" id="btn-confirm-first" disabled onclick="confirmPick()">Confirm Selection</button>
+      <div class="selected-hint" id="pick1-hint" style="visibility:hidden;">Card selected — confirm when ready</div>
+      <button class="btn-primary btn-disabled" id="btn-confirm-first" disabled onclick="confirmPick()" style="max-width:260px;">
+        Confirm Selection
+      </button>
     </div>
   </div>
+</div>
 
-  <!-- WAITING SCREEN (generic) -->
-  <div class="screen" id="screen-waiting">
+<!-- ── WAITING (generic) ── -->
+<div class="screen" id="screen-waiting" style="padding-top:0;">
+  <div class="glass-card" style="max-width:360px; width:calc(100% - 48px);">
     <div class="waiting-box">
-      <div class="spinner" style="width:28px;height:28px;border-width:3px;"></div>
-      <div id="waiting-msg">Waiting for opponent...</div>
+      <div class="spinner lg"></div>
+      <div id="waiting-msg" style="font-size:15px; color:var(--accent-light); line-height:1.7;">
+        Waiting for opponent...
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- SECOND PLAYER PICK -->
-  <div class="screen" id="screen-pick2">
-    <div class="player-label" id="pick2-player-label">Your Turn</div>
-    <div class="round-label" id="pick2-round-label">Round 1 of 7</div>
+<!-- ── SECOND PLAYER PICK ── -->
+<div class="screen" id="screen-pick2">
+  <div class="screen-inner" style="max-width:500px; gap:16px;">
+    <div style="text-align:center;">
+      <div class="player-label" id="pick2-player-label">Your Turn</div>
+      <div class="round-label" id="pick2-round-label" style="margin-top:5px;">Round 1 of 7</div>
+    </div>
     <div class="announce-banner" id="pick2-banner">
       <div class="announce-who" id="pick2-opponent-name">Opponent</div>
       <div class="announce-color-text">played a <strong id="pick2-color-hint">RED</strong> card</div>
     </div>
     <div class="hand" id="hand-second"></div>
     <div class="confirm-area">
-      <div class="selected-hint" id="pick2-hint" style="visibility:hidden">Card selected — confirm when ready</div>
-      <button class="btn btn-primary btn-disabled" id="btn-confirm-second" disabled onclick="confirmPick()">Confirm Selection</button>
+      <div class="selected-hint" id="pick2-hint" style="visibility:hidden;">Card selected — confirm when ready</div>
+      <button class="btn-primary btn-disabled" id="btn-confirm-second" disabled onclick="confirmPick()" style="max-width:260px;">
+        Confirm Selection
+      </button>
     </div>
   </div>
+</div>
 
-  <!-- REVEAL -->
-  <div class="screen" id="screen-reveal">
-    <div class="player-label">Round Result</div>
-    <div class="round-label" id="reveal-round-label">Round 1 of 7</div>
+<!-- ── REVEAL ── -->
+<div class="screen" id="screen-reveal">
+  <div class="screen-inner" style="gap:24px;">
+    <div style="text-align:center;">
+      <div class="player-label">Round Result</div>
+      <div class="round-label" id="reveal-round-label" style="margin-top:5px;">Round 1 of 7</div>
+    </div>
     <div class="reveal-row">
       <div class="reveal-slot">
         <div class="reveal-card" id="reveal-card-mine"><span class="rv-label"></span></div>
@@ -328,17 +830,21 @@
       </div>
       <div class="reveal-slot">
         <div class="reveal-card card-back"><span class="rv-label">?</span></div>
-        <div class="reveal-player-name" id="reveal-name-opp">Opponent's Card</div>
+        <div class="reveal-player-name" id="reveal-name-opp">Opponent</div>
       </div>
     </div>
     <div class="reveal-result" id="reveal-result">You win!</div>
-    <button class="btn btn-primary" id="btn-next-round" onclick="nextRound()">Next Round</button>
+    <button class="btn-primary" id="btn-next-round" onclick="nextRound()" style="max-width:260px;">
+      Next Round
+    </button>
   </div>
+</div>
 
-  <!-- GAME OVER -->
-  <div class="screen" id="screen-gameover">
-    <div class="trophy" id="go-trophy">🏆</div>
-    <div class="final-title" id="go-title">Game Over</div>
+<!-- ── GAME OVER ── -->
+<div class="screen" id="screen-gameover" style="padding-top:0;">
+  <div class="screen-inner" style="gap:24px;">
+    <div style="font-size:64px; text-align:center;" id="go-trophy">🏆</div>
+    <div class="screen-title" id="go-title">Game Over</div>
     <div class="final-scores">
       <div class="final-score-box" id="go-box1">
         <div class="final-score-name" id="go-name1">—</div>
@@ -349,18 +855,96 @@
         <div class="final-score-val" id="go-score2">0</div>
       </div>
     </div>
-    <button class="btn btn-secondary" onclick="resetToLobby()">Back to Lobby</button>
+    <button class="btn-secondary" onclick="resetToLobby()" style="max-width:260px;">
+      Back to Lobby
+    </button>
   </div>
-
-  <!-- DISCONNECT -->
-  <div class="screen" id="screen-disconnect">
-    <div class="screen-title" style="color:var(--red-light)">Connection Lost</div>
-    <div class="screen-sub">Your opponent disconnected. The game has ended.</div>
-    <button class="btn btn-secondary" onclick="resetToLobby()">Back to Lobby</button>
-  </div>
-
 </div>
+
+<!-- ── DISCONNECT ── -->
+<div class="screen" id="screen-disconnect" style="padding-top:0;">
+  <div class="glass-card" style="max-width:380px; width:calc(100% - 48px); padding:40px 32px;">
+    <div style="display:flex; flex-direction:column; align-items:center; gap:20px; text-align:center;">
+      <div class="screen-title" style="color:var(--red-suit);">Connection Lost</div>
+      <p style="color:var(--muted); font-size:14px; line-height:1.7;">
+        Your opponent disconnected. The game has ended.
+      </p>
+      <button class="btn-secondary" onclick="resetToLobby()">Back to Lobby</button>
+    </div>
+  </div>
+</div>
+
 <script>
+// ── Particles ──
+(function initParticles() {
+  const container = document.getElementById('bg-particles');
+  const data = [
+    { sym: '♠', red: false }, { sym: '♥', red: true },
+    { sym: '♦', red: true  }, { sym: '♣', red: false },
+    { sym: 'A', red: false }, { sym: 'K', red: false }, { sym: '7', red: false },
+  ];
+  for (let i = 0; i < 16; i++) {
+    const d = data[i % data.length];
+    const el = document.createElement('div');
+    el.className = 'particle';
+    el.style.cssText = [
+      `left:${(i * 73 + 11) % 100}%`,
+      `animation-delay:${(i * 1.9) % 14}s`,
+      `animation-duration:${12 + (i * 2.3) % 10}s`,
+      `--rot-start:${-20 + (i * 13) % 40}deg`,
+      `--rot-end:${-20 + (i * 13) % 40 + (i % 2 === 0 ? 24 : -24)}deg`,
+      `--max-op:${0.07 + (i % 3) * 0.03}`,
+    ].join(';');
+    const span = document.createElement('span');
+    span.textContent = d.sym;
+    span.style.color = d.red ? 'var(--red-suit)' : 'var(--muted)';
+    el.appendChild(span);
+    container.appendChild(el);
+  }
+})();
+
+// ── Theme ──
+(function initTheme() {
+  const saved = localStorage.getItem('rb_theme') || 'light';
+  applyTheme(saved, false);
+})();
+
+function applyTheme(theme, animate) {
+  if (animate === false) {
+    document.documentElement.style.transition = 'none';
+    requestAnimationFrame(() => { document.documentElement.style.transition = ''; });
+  }
+  const isLight = theme === 'light';
+  document.documentElement.classList.toggle('theme-light', isLight);
+  const label = document.getElementById('theme-label');
+  if (label) label.textContent = isLight ? 'Light' : 'Dark';
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.classList.contains('theme-light');
+  const next = isLight ? 'dark' : 'light';
+  localStorage.setItem('rb_theme', next);
+  applyTheme(next, true);
+}
+
+// ── Tab switcher ──
+let activeTab = 'create';
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tab-create').classList.toggle('active', tab === 'create');
+  document.getElementById('tab-join').classList.toggle('active', tab === 'join');
+  document.getElementById('tab-create-content').style.display = tab === 'create' ? 'flex' : 'none';
+  document.getElementById('tab-join-content').style.display   = tab === 'join'   ? 'flex' : 'none';
+  // sync name across tabs
+  const from = document.getElementById(tab === 'join' ? 'name-input' : 'name-input-join');
+  const to   = document.getElementById(tab === 'join' ? 'name-input-join' : 'name-input');
+  if (from && to && from.value) to.value = from.value;
+  clearLobbyError();
+}
+
+// ── Game logic ──
+
 const CARD_COLORS = { '8':'red', '9':'black', '10':'red', 'J':'black', 'Q':'red', 'K':'black', 'A':'red' };
 
 let ws = null;
@@ -370,27 +954,33 @@ let selectedCard = null;
 let lastPlayedCard = null;
 let myName = null;
 
-// ── CONNECTION ──
-
 window.addEventListener('load', connectWebSocket);
 window.addEventListener('load', initName);
 
 function initName() {
-  const input = document.getElementById('name-input');
   const saved = (localStorage.getItem('rb_name') || '').trim();
-  if (saved) input.value = saved;
-  myName = input.value.trim();
-  input.addEventListener('input', () => {
-    myName = input.value.trim();
-    localStorage.setItem('rb_name', myName);
+  myName = saved;
+  ['name-input', 'name-input-join'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (saved) el.value = saved;
+    el.addEventListener('input', () => {
+      myName = el.value.trim();
+      localStorage.setItem('rb_name', myName);
+      // keep both inputs in sync
+      const otherId = id === 'name-input' ? 'name-input-join' : 'name-input';
+      const other = document.getElementById(otherId);
+      if (other) other.value = el.value;
+    });
   });
 }
 
 function requireName() {
-  const input = document.getElementById('name-input');
+  const id = activeTab === 'join' ? 'name-input-join' : 'name-input';
+  const input = document.getElementById(id);
   const name = (input?.value || '').trim();
   if (!name) {
-    showLobbyError('Enter a username first.');
+    showLobbyError('Enter your name first.');
     input?.focus();
     return null;
   }
@@ -399,13 +989,6 @@ function requireName() {
 }
 
 function connectWebSocket() {
-  // Default: connect back to the same host that served the page (works when hosting
-  // frontend + backend together, e.g. Render/Fly/Railway).
-  //
-  // For GitHub Pages (static), provide a backend WebSocket URL via:
-  //   ?ws=wss://YOUR-BACKEND-HOST
-  // Example:
-  //   https://USERNAME.github.io/REPO/?ws=wss%3A%2F%2Fyour-backend.onrender.com
   const params = new URLSearchParams(location.search);
   const override = params.get('ws');
   const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -422,6 +1005,7 @@ function handleServerMessage(msg) {
     myIndex = msg.playerIndex;
     if (myIndex === 0) {
       document.getElementById('room-code-value').textContent = msg.code;
+      document.getElementById('game-select-code').textContent = msg.code;
     }
   } else if (msg.type === 'state') {
     gameState = msg;
@@ -436,7 +1020,7 @@ function handleServerMessage(msg) {
   }
 }
 
-// ── RENDER ──
+// ── Render ──
 
 function renderGameState(s) {
   updateHUD(s);
@@ -447,12 +1031,9 @@ function renderGameState(s) {
 
   switch (s.phase) {
     case 'waiting':
-      // Player 1 only sees this screen. Personalize it with opponent's name if known.
-      document.getElementById('waiting-room-sub').textContent =
-        `Share this code with ${secondName}:`;
-      document.getElementById('waiting-room-spinner').textContent =
-        `Waiting for ${secondName} to join...`;
-      showScreen('waiting-room');
+      document.getElementById('game-select-spinner').textContent =
+        `Waiting for ${secondName} to join…`;
+      showScreen('game-select');
       break;
 
     case 'pick1':
@@ -461,7 +1042,7 @@ function renderGameState(s) {
         showScreen('pick1');
       } else {
         document.getElementById('waiting-msg').innerHTML =
-          `${firstName} is choosing their card...`;
+          `${firstName} is choosing their card…`;
         showScreen('waiting');
       }
       break;
@@ -472,10 +1053,10 @@ function renderGameState(s) {
         showScreen('pick2');
       } else {
         const clr = s.announcedColor;
-        const clrStyle = clr === 'red' ? 'color:var(--red-light)' : 'color:#ccc';
+        const clrStyle = clr === 'red' ? 'color:var(--red-suit)' : 'color:var(--accent-light)';
         document.getElementById('waiting-msg').innerHTML =
           `You played a <strong style="${clrStyle}">${clr.toUpperCase()}</strong> card.<br>` +
-          `Waiting for ${secondName} to respond...`;
+          `Waiting for ${secondName} to respond…`;
         showScreen('waiting');
       }
       break;
@@ -513,11 +1094,11 @@ function updateHUD(s) {
 function setupPickScreen(s, mode) {
   selectedCard = null;
   const isFirst = mode === 'first';
-  const handId    = isFirst ? 'hand-first'          : 'hand-second';
-  const labelId   = isFirst ? 'pick1-player-label'  : 'pick2-player-label';
-  const roundId   = isFirst ? 'pick1-round-label'   : 'pick2-round-label';
-  const hintId    = isFirst ? 'pick1-hint'           : 'pick2-hint';
-  const btnId     = isFirst ? 'btn-confirm-first'    : 'btn-confirm-second';
+  const handId  = isFirst ? 'hand-first'         : 'hand-second';
+  const labelId = isFirst ? 'pick1-player-label'  : 'pick2-player-label';
+  const roundId = isFirst ? 'pick1-round-label'   : 'pick2-round-label';
+  const hintId  = isFirst ? 'pick1-hint'          : 'pick2-hint';
+  const btnId   = isFirst ? 'btn-confirm-first'   : 'btn-confirm-second';
 
   const names = normalizeNames(s);
   document.getElementById(labelId).textContent = `${names[s.myIndex]} — Your Turn`;
@@ -529,7 +1110,7 @@ function setupPickScreen(s, mode) {
     banner.className = `announce-banner ${clr}-banner`;
     const colorEl = document.getElementById('pick2-color-hint');
     colorEl.textContent = clr.toUpperCase();
-    colorEl.style.color = clr === 'red' ? 'var(--red-light)' : '#ccc';
+    colorEl.style.color = clr === 'red' ? 'var(--red-suit)' : 'var(--accent-light)';
     document.getElementById('pick2-opponent-name').textContent = names[s.firstPlayer];
   }
 
@@ -603,7 +1184,7 @@ function setupRevealScreen(s) {
 
   const btn = document.getElementById('btn-next-round');
   if (s.myReady) {
-    btn.textContent = 'Waiting for opponent...';
+    btn.textContent = 'Waiting for opponent…';
     btn.disabled = true;
     btn.classList.add('btn-disabled');
   } else {
@@ -638,7 +1219,7 @@ function normalizeNames(s) {
   return [names[0] || fallback(0), names[1] || fallback(1)];
 }
 
-// ── ACTIONS ──
+// ── Actions ──
 
 function createGame() {
   if (!ws || ws.readyState !== 1) { connectWebSocket(); setTimeout(createGame, 300); return; }
@@ -661,7 +1242,7 @@ function joinGame() {
 function nextRound() {
   if (!ws || ws.readyState !== 1) return;
   const btn = document.getElementById('btn-next-round');
-  btn.textContent = 'Waiting for opponent...';
+  btn.textContent = 'Waiting for opponent…';
   btn.disabled = true;
   btn.classList.add('btn-disabled');
   ws.send(JSON.stringify({ type: 'next' }));
@@ -672,7 +1253,7 @@ function copyCode() {
   navigator.clipboard.writeText(code).then(() => {
     const btn = document.getElementById('copy-btn');
     const orig = btn.textContent;
-    btn.textContent = 'Copied!';
+    btn.textContent = '✓ Copied';
     setTimeout(() => btn.textContent = orig, 2000);
   });
 }
@@ -688,7 +1269,7 @@ function resetToLobby() {
   showScreen('lobby');
 }
 
-// ── UTILITY ──
+// ── Utility ──
 
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -696,8 +1277,7 @@ function showScreen(name) {
 }
 
 function showLobbyError(msg) {
-  const el = document.getElementById('lobby-error');
-  el.textContent = msg;
+  document.getElementById('lobby-error').textContent = msg;
 }
 
 function clearLobbyError() {
